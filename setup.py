@@ -1,9 +1,21 @@
-from setuptools import setup
+import setuptools
 
 
-setup(
+setuptools.setup(
     name='scaraotschi',
     version='0.1.0',
-    install_requires=['python-daemon'],
-    py_modules=['scaraotschi.py'],
+    packages=setuptools.find_packages('src'),
+    package_dir={'': 'src'},
+    install_requires=[
+        'googletrans',
+        'amqp',
+        'python-daemon',
+    ],
+    entry_points={
+        'console_scripts': [
+            'gtd = scaraotschi.gtd:main',
+            'gtranslate = scaraotschi.gtranslate:main',
+        ]
+    },
+    license='MIT',
 )
