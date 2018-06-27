@@ -1,5 +1,6 @@
 import logging
 import argparse
+import uuid
 
 from . import messaging
 
@@ -8,10 +9,10 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__file__)
 
 
-def set_translation(response, output):
-    logger.info('  [x] Received {}'.format(response))
-    hash_, translation = response.split(':', 1)
-    output[hash_] = translation
+def process_message(message, responses):
+    logger.info('  [x] Received {}'.format(message.body))
+    response = messaging.deserialize(message.body)
+    responses[response['original']] = response['translation']
 
 
 def main():
@@ -24,12 +25,20 @@ def main():
     logger.info('Called with {}'.format(args))
     with open(args.file) as fp:
         lines = fp.readlines()
+    client_id = '{}'.format(uuid.uuid4())
     for line in lines:
-        messaging.send(line.strip(), 'input_queue')
-    output = {}
-    messaging.recieve('output_queue',
-                      lambda x: set_translation(x.body, output),
-                      lambda: len(output) == len(lines))
+        messaging.send(
+            messaging.serialize({
+                'text': line.strip(),
+                'language': args.language,
+                'client': client_id,
+            }),
+            'input-queue'
+        )
+    responses = {}
+    messaging.recieve('output-queue-{}'.format(client_id),
+                      lambda x: process_message(x, responses),
+                      lambda: len(responses) == len(lines))
 
 
 if __name__ == '__main__':

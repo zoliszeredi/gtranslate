@@ -1,5 +1,5 @@
 import logging
-import hashlib
+import json
 
 import amqp.connection
 import amqp.channel
@@ -10,16 +10,19 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__file__)
 
 
-def hash(body):
-    return hashlib.sha256(bytearray(body, 'utf8')).hexdigest()
-
-
 def get_channel(queue):
     connection = amqp.connection.Connection()
     channel = amqp.channel.Channel(connection)
     channel.open()
     channel.queue_declare(queue=queue, durable=True)
     return channel
+
+
+def serialize(dict_):
+    return json.dumps(dict_)
+
+def deserialize(bytes_):
+    return json.loads(bytes_)
 
 
 def send(body, queue):
