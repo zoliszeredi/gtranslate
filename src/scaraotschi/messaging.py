@@ -6,14 +6,14 @@ import amqp.channel
 import amqp.basic_message
 
 
-logging.basicConfig(level=logging.INFO)
+# logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__file__)
 
 
 def get_channel(queue):
     connection = amqp.connection.Connection()
-    channel = amqp.channel.Channel(connection)
-    channel.open()
+    connection.connect()
+    channel = connection.channel()
     channel.queue_declare(queue=queue, durable=True)
     return channel
 
@@ -32,9 +32,9 @@ def send(body, queue):
     logger.info(' [x] Sent {}'.format(message.body))
 
 
-def recieve(queue, callback, done=None):
+def recieve(queue, callback, done=None, **kwargs):
     channel = get_channel(queue)
     channel.basic_consume(callback=callback, queue=queue, no_ack=True)
     logger.info('  [*] Waiting for messages; exit with CTRL-C ')
     while done is None or not done():
-        channel.connection.drain_events()
+        channel.connection.drain_events(**kwargs)

@@ -11,26 +11,26 @@ from . import messaging
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__file__)
-QUERIES_PER_SEC = os.environ.get('QUERIES_PER_SEC', 16)
-TRANSLATE_TIMEOUT = 3
 
 
-def translate(line, dest_lang='en', translator=None):
+def translate(line, dest_lang='en', translator=None, timeout=5):
     "See: https://py-googletrans.readthedocs.io/en/latest/"
     translator = (translator or
-                  googletrans.Translator(timeout=TRANSLATE_TIMEOUT))
+                  googletrans.Translator(timeout=timeout))
     translation = translator.translate(line, dest=dest_lang)
-    output = translation.text
-    return output
+    return translation
 
 
 
 def process_message(message):
     input_ = messaging.deserialize(message.body)
+    translation =  translate(input_['text'],
+                             input_['language'])
     output_ = {
-        'translation': translate(input_['text'],
-                                 input_['language']),
+        'translation': translation.text,
+        'translation-language': input_['language'],
         'original': input_['text'],
+        'original-language': translation.src,
         'client': input_['client'],
     }
     return messaging.send(messaging.serialize(output_),
@@ -69,6 +69,7 @@ def mainloop():
 
 
 def main():
+    queries_per_sec = os.environ.get('QUERIES_PER_SEC', 16)
     with daemon.DaemonContext():
         mainloop()
 
