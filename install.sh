@@ -1,6 +1,8 @@
 #! /usr/bin/env bash
+set -e
 
 
-virtualenv -p $(which python3) venv
+python3 -mvenv venv
 venv/bin/pip install -e .
-echo venv/bin/gtranslate -f <file> -l <lang>
+
+echo "venv/bin/gtranslate -f <file> -l <lang>"

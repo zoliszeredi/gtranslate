@@ -1,7 +1,7 @@
-import multiprocessing.pool
+import multiprocessing
 import logging
-import queue
 import os
+import signal
 
 import daemon
 import googletrans
@@ -37,16 +37,41 @@ def process_message(message):
                           queue='output-queue-{}'.format(input_['client']))
 
 
-def main():
-    process_pool = multiprocessing.pool.Pool()
-    input_queue = queue.Queue(maxsize=process_pool._processes)
-    messaging.recieve(
-        queue='input-queue',
-        callback=process_message
+def task(message, pool):
+    process = multiprocessing.Process(
+        target=process_message,
+        args=(message, ),
     )
+    process.start()
+    pool.append(process)
 
+
+def all_processes_finished(pool):
+    for process in pool:
+        if process.is_alive() or process.exitcode is not None:
+            finished = False
+            break
+    else:
+        finished = len(pool) > 0
+    return finished
+
+
+def mainloop():
+    while True:
+        process_pool = []
+        messaging.recieve(
+            queue='input-queue',
+            callback=lambda m: task(m, process_pool),
+            done=lambda: all_processes_finished(process_pool)
+        )
+        for process in process_pool:
+            process.join()
+
+
+def main():
+    with daemon.DaemonContext():
+        mainloop()
 
 
 if __name__ == '__main__':
-    with daemon.DaemonContext:
-        main()
+    main()
