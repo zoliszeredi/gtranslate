@@ -29,7 +29,7 @@ def send(body, queue):
     channel = get_channel(queue)
     message = amqp.basic_message.Message(body=body, delivery_mode=2)
     channel.basic_publish(message, routing_key=queue)
-    logger.info(' [x] Sent {}'.format(message.body))
+    logger.info(' [x] Sent %s', message.body)
 
 
 def recieve(queue, callback, done=None, **kwargs):

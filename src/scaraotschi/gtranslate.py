@@ -12,9 +12,10 @@ from . import messaging
 logger = logging.getLogger(__file__)
 
 
-def process_message(message, responses):
-    logger.info('  [x] Received {}'.format(message.body))
+def process_message(message, responses, verbosity):
+    logger.info('  [x] Received %s', message.body)
     response = messaging.deserialize(message.body)
+    print_response(response, verbosity)
     responses.append(response)
 
 
@@ -37,7 +38,7 @@ def read_data():
     parser.add_argument('-v', '--verbosity', type=int,
                         help='Verbosity', default='0')
     args = parser.parse_args()
-    logger.info('Called with {}'.format(args))
+    logger.info('Called with %s', args)
     rawlines = args.file.readlines()
     lines = [line.strip()
              for line in rawlines
@@ -45,19 +46,19 @@ def read_data():
     return lines, args.language, args.verbosity
 
 
-def print_responses(responses, verbosity=0):
+def print_response(response, verbosity):
     formats = {
         0: '{translation}',
         1: '{original}[{olang}] -> {translation}[{tlang}]',
     }
-    for response in responses:
-        options = {
-            'translation': response['translation'],
-            'original': response['original'],
-            'olang': response['original-language'],
-            'tlang': response['translation-language'],
-        }
-        print (formats[verbosity].format(**options))
+    options = {
+        'translation': response['translation'],
+        'original': response['original'],
+        'olang': response['original-language'],
+        'tlang': response['translation-language'],
+    }
+    print(formats[verbosity].format(**options))
+
 
 def main():
     try:
@@ -78,12 +79,11 @@ def main():
     responses = []
     try:
         messaging.recieve('output-queue-{}'.format(client_id),
-                          lambda m: process_message(m, responses),
+                          lambda m: process_message(m, responses, verbosity),
                           lambda: complete(lines, responses),
                           timeout=timeout)
-        print_responses(responses, verbosity)
     except socket.error as error:
-        logger.error('Error with gtd: {}'.format(error))
+        logger.error('Error with gtd: %s', error)
 
 
 if __name__ == '__main__':

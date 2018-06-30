@@ -4,7 +4,7 @@ set -e
 venvpath=${1:-venv}
 
 python3 -mvenv ${venvpath}
-${venvpath}/bin/pip install .
+${venvpath}/bin/pip install -e .
 
 echo "Crashcourse"
 echo ""
