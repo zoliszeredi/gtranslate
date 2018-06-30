@@ -1,4 +1,0 @@
-- uses local rabbitmq for communication
-- start with ./install.sh to boostrap local venv
-- run gtd in one tty
-- run gtranslate in another tty

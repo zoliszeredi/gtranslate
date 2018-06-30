@@ -1,8 +1,13 @@
 #! /usr/bin/env bash
 set -e
 
+venvpath=${1:-venv}
 
-python3 -mvenv venv
-venv/bin/pip install -e .
+python3 -mvenv ${venvpath}
+${venvpath}/bin/pip install .
 
-echo "venv/bin/gtranslate -f <file> -l <lang>"
+echo "Crashcourse"
+echo ""
+echo ". $venvpath/bin/activate # activate the venv"
+echo "gtd # this starts the daemon"
+echo "gtranslate -f <file> -l <lang> # this does the translation"
