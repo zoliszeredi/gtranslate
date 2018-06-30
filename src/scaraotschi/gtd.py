@@ -55,7 +55,7 @@ def all_processes_finished(pool, maxsize):
             break
     else:
         finished = len(pool) > 0
-    return finished and len(poo) > maxsize
+    return finished and len(pool) > maxsize
 
 
 def mainloop(maxsize):
@@ -75,8 +75,8 @@ def main():
         queries_per_sec = int(os.environ.get('QUERIES_PER_SEC'))
     except (ValueError, TypeError):
         queries_per_sec = 16
-    # with daemon.DaemonContext():
-    mainloop(queries_per_sec)
+    with daemon.DaemonContext():
+        mainloop(queries_per_sec)
 
 
 if __name__ == '__main__':
