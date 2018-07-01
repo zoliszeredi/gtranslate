@@ -1,6 +1,8 @@
 |screencast_basic|
 
-* uses local rabbitmq for communication
+* uses local installed rabbitmq server for communication
+  - on debian/ubuntu: `apt-get install rabbitmq-server`
+  - on osx/homebrew: `brew install rabbitmq`
 * start with ./install.sh to boostrap local venv
 * run gtd
 * run gtranslate
